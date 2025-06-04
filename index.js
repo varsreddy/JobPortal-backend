@@ -27,7 +27,7 @@ app.use(cookieParser());
 
 // allow cross-origin requests
 const corsOptions = {
-  origin: process.env.CLIENT_URL || "http://localhost:5173", // fallback for dev
+  origin: [process.env.CLIENT_URL || "http://localhost:5173","https://job-portal-frontend-six-lime.vercel.app/"], // fallback for dev
   credentials: true,
 };
 app.use(cors(corsOptions));

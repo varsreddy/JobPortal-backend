@@ -96,11 +96,11 @@ export const login = async (req,res)=>{
 
         //jwt.sign(payload,secretkey,options)   
         const token = await jwt.sign(tokenData,process.env.SECRET_KEY,{expiresIn:"1d"});
-        return res.cookie("token",token,{maxAge:1*24*60*60*1000,httpOnly:true,sameSite:'strict'})
+        return res.cookie("token",token,{maxAge:1*24*60*60*1000,httpOnly:true,secure:true,sameSite:'None'})
         .status(200).json(
             {
                 message:`Welcome back ${user.fullname}`,
-                user,success:true
+                user,token,success:true
             });
     }catch(err){
         console.log("Error in Login: ",err);
