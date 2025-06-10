@@ -73,9 +73,9 @@
 import express from 'express';
 import serverless from 'serverless-http';
 import cookieParser from 'cookie-parser';
-import cors from 'cors';
+import cors from "cors";
 import dotenv from 'dotenv';
-import connectDB from './utils/connectDB.js';
+import connectDB from './db.js';
 
 import userRoute from './routes/user.route.js';
 import companyRoute from './routes/company.route.js';
@@ -83,10 +83,10 @@ import jobRoute from './routes/job.route.js';
 import applicationRoute from './routes/application.route.js';
 
 dotenv.config();
+connectDB(); // ✅ Called once and reused
 
 const app = express();
 
-// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -96,23 +96,14 @@ app.use(cors({
   credentials: true
 }));
 
-// Connect to DB
-await connectDB();
-
 // Routes
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/company", companyRoute);
 app.use("/api/v1/job", jobRoute);
 app.use("/api/v1/application", applicationRoute);
 
-// Health route
 app.get("/home", (req, res) => {
   res.status(200).json({ message: "Backend running", success: true });
 });
 
-// Export for Vercel
-const handler = serverless(app, {
-  callbackWaitsForEmptyEventLoop: false
-});
-
-export default handler;
+export default serverless(app);
