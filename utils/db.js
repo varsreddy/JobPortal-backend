@@ -1,31 +1,16 @@
-// import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-// const connectDB = async () => {
-//     try{
-//         await mongoose.connect(process.env.MONGO_URI);
-//         console.log('mongoDB connected successfully');
-//     }catch(err){
-//         console.log(err);
-//     }
-// }
-
-// export default connectDB;
-
-
-
-// db.js
-import mongoose from "mongoose";
-
-const connectDB = async () => {
-  if (mongoose.connection.readyState >= 1) return;
-
+const connectDb = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log("✅ MongoDB connected");
-  } catch (err) {
-    console.error("❌ MongoDB connection error:", err);
+    const conn = await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log(`✅ MongoDB connected: ${conn.connection.host}`);
+  } catch (error) {
+    console.error('❌ MongoDB connection failed:', error.message);
+    throw error; // This is important to prevent the app from starting without DB
   }
 };
 
-export default connectDB;
-
+export default connectDb;
