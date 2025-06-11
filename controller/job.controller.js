@@ -59,7 +59,10 @@ export const postJob = async (req, res) => {
 // students can apply for job
 export const getAllJobs = async (req, res) => {
   try {
-    const keyword = req.query.keyword || ""; //keyword for search
+    const keyword = req.query.keyword || "";
+    const salaryQuery = req.query.salary || ""; // ✅ Get salary range from query params
+
+    // Initialize search query
     const query = {
       $or: [
         { title: { $regex: keyword, $options: "i" } },
@@ -67,21 +70,24 @@ export const getAllJobs = async (req, res) => {
       ],
     };
 
+    // ✅ Apply salary filtering if a range is provided
+    if (salaryQuery.includes('-')) {
+      const [minSalary, maxSalary] = salaryQuery.split('-').map(Number);
+      query.salary = { $gte: minSalary, $lte: maxSalary };
+    }
+
     const jobs = await Job.find(query)
-      .populate({
-        path: "company",
-      })
+      .populate({ path: "company" })
       .sort({ createdAt: -1 });
-    if (!jobs) {
+
+    if (!jobs.length) {
       return res.status(400).json({ message: "No jobs found", success: false });
     }
 
-    return res.status(200).json({
-      success: true,
-      jobs,
-    });
+    return res.status(200).json({ success: true, jobs });
   } catch (error) {
-    console.log(error);
+    console.error("Error fetching jobs:", error);
+    res.status(500).json({ message: "Internal server error", success: false });
   }
 };
 
