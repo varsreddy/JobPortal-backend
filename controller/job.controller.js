@@ -62,17 +62,26 @@ export const getAllJobs = async (req, res) => {
     const keyword = req.query.keyword || "";
     const salaryRange = req.query.salary || "";
 
-    const query = {
-      $or: [
+    const query = {};
+
+    if (keyword) {
+      query.$or = [
         { title: { $regex: keyword, $options: "i" } },
         { description: { $regex: keyword, $options: "i" } },
-      ]
-    };
+      ];
+    }
 
     if (salaryRange.includes("-")) {
-      const [min, max] = salaryRange.split("-").map(Number);
-      query.salary = { $gte: min, $lte: max };
+      const [minStr, maxStr] = salaryRange.split("-");
+      const min = Number(minStr);
+      const max = maxStr === "Infinity" ? Number.MAX_SAFE_INTEGER : Number(maxStr);
+
+      if (!isNaN(min) && !isNaN(max)) {
+        query.salary = { $gte: min, $lte: max };
+      }
     }
+
+    console.log("📦 MongoDB Query:", query);
 
     const jobs = await Job.find(query)
       .populate({ path: "company" })
@@ -84,7 +93,7 @@ export const getAllJobs = async (req, res) => {
 
     return res.status(200).json({ success: true, jobs });
   } catch (error) {
-    console.error(error);
+    console.error("⚠️ getAllJobs error:", error);
     return res.status(500).json({ message: "Server error", success: false });
   }
 };
