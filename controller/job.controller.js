@@ -59,7 +59,7 @@ export const postJob = async (req, res) => {
 // students can apply for job
 export const getAllJobs = async (req, res) => {
   try {
-    const keyword = req.query.keyword || "";
+    const keyword = req.query.keyword?.trim() || "";
     const salaryRange = req.query.salary || "";
 
     const query = {};
@@ -71,7 +71,7 @@ export const getAllJobs = async (req, res) => {
       ];
     }
 
-    if (salaryRange.includes("-")) {
+    if (salaryRange && /^\d+-\d+$/.test(salaryRange)) {
       const [minStr, maxStr] = salaryRange.split("-");
       const min = Number(minStr);
       const max = maxStr === "Infinity" ? Number.MAX_SAFE_INTEGER : Number(maxStr);
@@ -88,16 +88,15 @@ export const getAllJobs = async (req, res) => {
       .sort({ createdAt: -1 });
 
     if (!jobs.length) {
-      return res.status(400).json({ message: "No jobs found", success: false });
+      return res.status(404).json({ message: "No jobs found", success: false });
     }
 
     return res.status(200).json({ success: true, jobs });
   } catch (error) {
     console.error("⚠️ getAllJobs error:", error);
-    return res.status(500).json({ message: "Server error", success: false });
+    return res.status(500).json({ message: "Server error", success: false, error: error.message });
   }
 };
-
 // get all jobs by company id -- student
 export const getJobById = async (req, res) => {
   try {
